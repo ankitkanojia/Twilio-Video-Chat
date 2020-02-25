@@ -193,7 +193,7 @@ class App extends Component {
       <React.Fragment>
         <div className="container">
           <a target="_blank" href="https://github.com/ankitkanojia/twillio_videochat"><img className="githubribbon attachment-full size-full" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_green_007200.png?resize=149%2C149" alt="Fork me on GitHub" data-recalc-dims="1" /></a>
-          <h2 className="mt-2">Twillio Prgrammable Video Chat</h2>
+          <h2 className="mt-2">Twillio Real-Time Programmable Video</h2>
           {!this.state.hasJoinedRoom &&
             <div className="row">
               <div className="col-3 form-inline">
@@ -223,7 +223,9 @@ class App extends Component {
                     {!this.state.hasParticipantsJoinedRoom && !this.state.peerIdentity && <Loader type="Puff" color="#00BFFF" />}
                   </div>
                 </div>
-                <div className="card-footer"> <span>Peer User Name : {`${this.state.peerIdentity}`}</span ></div>
+                <div className="card-footer text-center">
+                  {(!this.state.hasParticipantsJoinedRoom && !this.state.peerIdentity) ? <span>Wait for peer user to connect channel  !!!</span> : <span>Peer User Name : {`${this.state.peerIdentity}`}</span >}
+                </div>
               </div>
             </div>
           </div>
