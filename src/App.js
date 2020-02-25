@@ -1,16 +1,12 @@
 import React, { Component } from 'react'
 import Video from 'twilio-video';
-
-let tokens = [
-    { text: "##", value: "##" },
-    { text: "##", value: "##" }
-]
+import axios from 'axios';
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            userId: 0,
+            userName  : "",
             identity: null,
             peerUserId: 0,
             peerIdentity: "",
@@ -20,7 +16,7 @@ class App extends Component {
             localMediaAvailable: false,
             hasJoinedRoom: false,
             activeRoom: '', // Track the current active room
-            token: ''
+            jwt: ''
         }
 
         this.joinRoom = this.joinRoom.bind(this);
@@ -30,13 +26,29 @@ class App extends Component {
         this.detachParticipantTracks = this.detachParticipantTracks.bind(this);
     }
 
-    handleRoomNameChange(e) {
-        let roomName = e.target.value;
-        this.setState({ roomName });
+    getTwillioToken = () => {
+      const currentUserName = this.refs["yourname"].value;
+      if(currentUserName.length === 0)
+      {
+        alert('Enter Your Name');
+        return;
+      }
+
+      axios.get('/token/' + currentUserName).then(results => {
+        const { identity, jwt } = results.data;
+        this.setState(
+          {
+            identity,
+            jwt
+          }, () => {
+            this.setState({ userName: currentUserName });
+            this.joinRoom();
+          });
+      });
     }
 
     joinRoom() {
-        if (!this.state.roomName.trim()) {
+      if (!this.state.roomName.trim()) {
             this.setState({ roomNameErr: true });
             return;
         }
@@ -52,7 +64,9 @@ class App extends Component {
 
         // Join the Room with the token from the server and the
         // LocalParticipant's Tracks.
-        Video.connect(this.state.userId, connectOptions).then(this.roomJoined, error => {
+        console.log(this.state.jwt);
+        console.log(connectOptions);
+        Video.connect(this.state.jwt, connectOptions).then(this.roomJoined, error => {
             alert('Could not connect to Twilio: ' + error.message);
         });
     }
@@ -83,6 +97,7 @@ class App extends Component {
     }
 
     roomJoined(room) {
+       alert('asd');
         // Called when a participant joins a room
         console.log("Joined as '" + this.state.identity + "'");
         this.setState({
@@ -156,51 +171,49 @@ class App extends Component {
         this.setState({ hasJoinedRoom: false, localMediaAvailable: false, peerIdentity: '' });
     }
 
-    userChange = (obj, name) => {
-        console.log(obj, name);
-        let { value, id } = obj
-        let identity = tokens.filter(obj => {
-            if (obj.value === value) {
-                return true
-            }
-            else {
-                return false
-            }
-        })[0]
-        this.setState({
-            [id]: value,
-            [name]: identity['text']
-        })
-    }
-
     render() {
 
         /* Hide 'Join Room' button if user has already joined a room */
         let joinOrLeaveRoomButton = this.state.hasJoinedRoom ? (
-            <button onClick={this.leaveRoom} > Leave Room</button>
+            <button className="btn btn-warning" onClick={this.leaveRoom} > Leave Room</button>
         ) : (
-                <button onClick={this.joinRoom} >Join Room</button>
+                <button className="btn btn-success ml-2" onClick={this.getTwillioToken} >Join Room</button>
             );
         /** */
 
         return (
-            <React.Fragment>
-                <h1 class="mt-5">One-One Video Chat</h1>
+          <React.Fragment>
+            <div className="container">
+              <h2 className="mt-2">Twillio Prgrammable Video Chat</h2>
+              {!this.state.hasJoinedRoom &&
                 <div className="row">
-                    <div className="col-6" style={{ marginTop: 60 }}>
-                        <h2>Peer User Name : {`${this.state.peerIdentity}`}</h2>
+                  <div className="col-3 form-inline">
+                    <div className="form-group mt-2">
+                      <input className="form-control" type="text" ref="yourname" />  {joinOrLeaveRoomButton}
                     </div>
-                    <div className="col-6">
-                        <div ref="groupChat_localMedia" >
-                        </div>
-                    </div>
-                    <div className="col-6">
-                        <div ref="remoteMedia" >
-                        </div>
-                    </div>
-                    <div className="col-2">{joinOrLeaveRoomButton}</div>
+                  </div>
                 </div>
-            </React.Fragment>
+              }
+              <div className="row mt-3">
+                <div className="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div ref="groupChat_localMedia"></div>
+                    </div>
+                    <div class="card-footer">{ this.state.hasJoinedRoom ? <button className="btn btn-warning" onClick={this.leaveRoom} > Leave Room</button> : <span>&nbsp;</span>}</div>
+                  </div>
+                </div>
+                <div className="col-6">
+                  <div class="card">
+                    <div class="card-body">
+                      <div ref="remoteMedia"></div>
+                    </div>
+                    <div class="card-footer"> <span>Peer User Name : {`${this.state.peerIdentity}`}</span ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </React.Fragment>
         )
     }
 }
