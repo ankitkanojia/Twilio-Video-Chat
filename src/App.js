@@ -2,6 +2,9 @@ import React, { Component } from 'react'
 import Video from 'twilio-video';
 import axios from 'axios';
 import './global.css';
+import { ToastsContainer, ToastsStore } from 'react-toasts';
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import Loader from 'react-loader-spinner';
 
 class App extends Component {
   constructor(props) {
@@ -16,6 +19,7 @@ class App extends Component {
       previewTracks: null,
       localMediaAvailable: false,
       hasJoinedRoom: false,
+      hasParticipantsJoinedRoom: false,
       activeRoom: '', // Track the current active room
       jwt: ''
     }
@@ -30,7 +34,7 @@ class App extends Component {
   getTwillioToken = () => {
     const currentUserName = this.refs["yourname"].value;
     if (currentUserName.length === 0) {
-      alert('Enter Your Name');
+      ToastsStore.error("Please enter the username!");
       return;
     }
 
@@ -41,8 +45,12 @@ class App extends Component {
           identity,
           jwt
         }, () => {
-          this.setState({ userName: currentUserName });
-          this.joinRoom();
+          if (jwt.length === 0 || identity.length === 0) {
+            ToastsStore.error("Issue to fetch token!");
+          } else {
+            this.setState({ userName: currentUserName });
+            this.joinRoom();
+          }
         });
     });
   }
@@ -64,10 +72,9 @@ class App extends Component {
 
     // Join the Room with the token from the server and the
     // LocalParticipant's Tracks.
-    console.log(this.state.jwt);
-    console.log(connectOptions);
     Video.connect(this.state.jwt, connectOptions).then(this.roomJoined, error => {
-      alert('Could not connect to Twilio: ' + error.message);
+      ToastsStore.error('Please verify your connection of webcam!');
+      ToastsStore.error('Webcam-Video permission should not block!');
     });
   }
 
@@ -201,6 +208,9 @@ class App extends Component {
               <div className="card">
                 <div className="card-body">
                   <div ref="groupChat_localMedia"></div>
+                  <div className="text-center">
+                    {!this.state.hasJoinedRoom && <Loader type="Puff" color="#00BFFF" />}
+                  </div>
                 </div>
                 <div className="card-footer">{this.state.hasJoinedRoom ? <button className="btn btn-warning" onClick={this.leaveRoom} > Leave Room</button> : <span>&nbsp;</span>}</div>
               </div>
@@ -209,12 +219,16 @@ class App extends Component {
               <div className="card">
                 <div className="card-body">
                   <div ref="remoteMedia"></div>
+                  <div className="text-center">
+                    {!this.state.hasParticipantsJoinedRoom && !this.state.peerIdentity && <Loader type="Puff" color="#00BFFF" />}
+                  </div>
                 </div>
                 <div className="card-footer"> <span>Peer User Name : {`${this.state.peerIdentity}`}</span ></div>
               </div>
             </div>
           </div>
         </div>
+        <ToastsContainer store={ToastsStore} />
       </React.Fragment>
     )
   }
