@@ -2,7 +2,7 @@
 
 This is an implementation of [Twilio Programmable Video](https://www.twilio.com/console/video/dashboard) using [React](https://facebook.github.io/react/).
 
-###### # NOTE: Please read [Twilio Pricing](https://www.twilio.com/pricing "Twilio Pricing") before use it as Twilio is not for free use.
+###### # NOTE: Please read [Twilio Pricing](https://www.twilio.com/pricing "Twilio Pricing") before use it, as Twilio Programmable Video service is not for free use.
 
 ## Setting up the react app
 
