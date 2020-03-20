@@ -41,3 +41,5 @@ npm start or yarn start
 ```
 
 Your application should start up at http://localhost:3000.
+
+<p align="center"><img src="https://raw.githubusercontent.com/ankitkanojia/Twilio_VideoChat/master/TwilioProgrammableVideo.gif" /></p>
